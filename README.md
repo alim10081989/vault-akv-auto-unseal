@@ -31,6 +31,10 @@ Local vault setup auto unseal using Azure Key Vault
 
 ![Vault Init](./images/vault_operator_init.jpeg)
 
+- Login with provided root token ```vault login $(root_token)``` and configure secrets.
+
+![Vault Secrets](./images/vault_kv_secret.jpeg)
+
 - Destroy the resources
 
     ```terraform destroy -auto-approve```
