@@ -5,7 +5,7 @@ Local vault setup auto unseal using Azure Key Vault
 
 # Steps
 
-- Configure resource group, keyvault service and service principal with permissions to access key vault. Also generate the vault config file in HCL language
+- Configure resource group, keyvault service and service principal with permissions to access key vault. Also generate the vault config file in HCL language with corresponding service principal secrets and key vault details
 
     ```terraform up -auto-approve```
 
