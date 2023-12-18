@@ -1,6 +1,6 @@
 variable "app_name" {
-    description = "Service Principal Name"
-    default = "vault-learn"
+  description = "Service Principal Name"
+  default     = "vault-learn"
 }
 
 variable "key_name" {
@@ -22,5 +22,5 @@ variable "resource_group_name" {
 }
 
 variable "local_storage_path" {
-    default = "/Users/aazad/Desktop/Learn/Vault/storage"
+  default = "/Users/aazad/Desktop/Learn/Vault/storage"
 }

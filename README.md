@@ -5,15 +5,11 @@ Local vault setup auto unseal using Azure Key Vault
 
 # Steps
 
-- Configure resource group, keyvault service and service principal with permissions to access key vault. Also generate the vault config file in HCL language with corresponding service principal secrets and key vault details
+- Configure resource group, keyvault service and service principal with permissions to access key vault. Also generate the vault config file in HCL language with corresponding service principal secrets and key vault details. Unseal the vault with Azure Key Vault running as background process and provide steps to login.
 
     ```terraform up -auto-approve```
 
-- Start vault on local machine 
-
-    ```vault server -config=vault.hcl```
-
-![Vault Config Start](./images/vault_config_start.jpeg)
+![Terraform_Output](./images/terraform_output.jpeg)
 
 - Set ```VAULT_ADDR``` environment variable
 
@@ -25,16 +21,12 @@ Local vault setup auto unseal using Azure Key Vault
 
 ![Vault Seal](./images/vault_sealed_status.jpeg)
 
-- Run below command and it should show only recovery codes with root token.
+- Login with the root token command provided in output. Perform vault commands and verify.
 
-    ```vault operator init```
-
-![Vault Init](./images/vault_operator_init.jpeg)
-
-- Login with provided root token ```vault login $(root_token)``` and configure secrets.
+    ```vault login $(echo "${data.local_file.vault_token.content_base64}" | base64 -d)```
 
 ![Vault Secrets](./images/vault_kv_secret.jpeg)
 
-- Destroy the resources
+- Destroy all the resources with storage and created files.
 
     ```terraform destroy -auto-approve```

@@ -43,7 +43,7 @@ resource "azurerm_key_vault" "vault" {
     tenant_id = data.azurerm_client_config.current.tenant_id
     object_id = data.azurerm_client_config.current.object_id
 
-    key_permissions    = ["Create", "Get", "List", "Delete", "Update", "GetRotationPolicy", "Purge"]
+    key_permissions = ["Create", "Get", "List", "Delete", "Update", "GetRotationPolicy", "Purge"]
   }
 }
 
@@ -62,13 +62,44 @@ resource "azurerm_key_vault_key" "vault_unseal_key" {
 resource "local_file" "vault_cfg" {
   content = templatefile("vault.tmpl",
     {
-      vault_client_id = azuread_service_principal.vault_learn.client_id,
+      vault_client_id     = azuread_service_principal.vault_learn.client_id,
       vault_client_secret = azuread_service_principal_password.vault_learn.value
-      vault_tenant_id = data.azurerm_client_config.current.tenant_id,
-      akv_name = azurerm_key_vault.vault.name,
-      vault_key = azurerm_key_vault_key.vault_unseal_key.name,
-      vault_storage_path = var.local_storage_path
+      vault_tenant_id     = data.azurerm_client_config.current.tenant_id,
+      akv_name            = azurerm_key_vault.vault.name,
+      vault_key           = azurerm_key_vault_key.vault_unseal_key.name,
+      vault_storage_path  = var.local_storage_path
     }
   )
   filename = "./vault.hcl"
+}
+
+resource "null_resource" "vault_start" {
+  triggers = {
+    file_changed = md5(local_file.vault_cfg.content)
+  }
+
+  provisioner "local-exec" {
+    when = create
+    command = <<EOL
+    nohup vault server -config=./vault.hcl &> /dev/null &
+    sleep 10 && vault operator init > ./recovery_keys_token
+    grep -i root recovery_keys_token | awk '{print $NF}' > ./root_token
+    vault status > ./unseal_status
+    EOL
+    environment = {
+      VAULT_ADDR = "http://127.0.0.1:8200"
+    }
+  }
+
+  depends_on = [local_file.vault_cfg]
+}
+
+resource "null_resource" "vault_stop" {
+  provisioner "local-exec" {
+    when = destroy
+    command = <<EOL
+      kill -9 $(pgrep -f vault)
+      rm -rf recovery_keys_token unseal_status root_token ../storage
+    EOL
+  }
 }

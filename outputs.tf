@@ -19,3 +19,14 @@ output "vault_unseal_key_name" {
   value       = azurerm_key_vault_key.vault_unseal_key.name
 }
 
+output "vault_unseal_login" {
+  description = "Vault Login Guide"
+  value = <<EOF
+
+  Steps:
+
+    1. export VAULT_ADDR="http://127.0.0.1:8200"
+    2. vault login $(echo "${data.local_file.vault_token.content_base64}" | base64 -d)
+  
+  EOF
+}

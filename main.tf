@@ -5,12 +5,12 @@ resource "azuread_application" "vault_learn" {
   required_resource_access {
     resource_app_id = data.azuread_application_published_app_ids.msgraphid.result.MicrosoftGraph
     resource_access {
-      id = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.All"]
+      id   = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.All"]
       type = "Role"
     }
 
     resource_access {
-      id = data.azuread_service_principal.msgraph.app_role_ids["Directory.ReadWrite.All"]
+      id   = data.azuread_service_principal.msgraph.app_role_ids["Directory.ReadWrite.All"]
       type = "Role"
     }
   }
