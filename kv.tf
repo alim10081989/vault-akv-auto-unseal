@@ -73,7 +73,7 @@ resource "local_file" "vault_cfg" {
   filename = "./vault.hcl"
 }
 
-resource "null_resource" "vault_start" {
+resource "null_resource" "vault_ops" {
   triggers = {
     file_changed = md5(local_file.vault_cfg.content)
   }
@@ -91,10 +91,6 @@ resource "null_resource" "vault_start" {
     }
   }
 
-  depends_on = [local_file.vault_cfg]
-}
-
-resource "null_resource" "vault_stop" {
   provisioner "local-exec" {
     when = destroy
     command = <<EOL
@@ -102,4 +98,6 @@ resource "null_resource" "vault_stop" {
       rm -rf recovery_keys_token unseal_status root_token ../storage
     EOL
   }
+
+  depends_on = [local_file.vault_cfg]
 }
