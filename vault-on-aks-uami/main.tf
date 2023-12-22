@@ -43,7 +43,7 @@ module "vault_helm" {
 
   resource_group_name = module.vault_rg.rg_name
   k8s_cluster_name    = module.vault_aks.kubernetes_cluster_name
-  akv_name      = module.vault_akv.key_vault_name
+  akv_name      	  = module.vault_akv.key_vault_name
   vault_namespace     = var.helm_vault_ns
   akv_key_name        = module.vault_akv.vault_unseal_key_name
 }
