@@ -14,3 +14,8 @@ variable "uami_map" {
     "kubelet"       = "UAMI_RT_LEARN_EUS"
   }
 }
+
+variable "helm_vault_ns" {
+  description = "Kubernetes namespace for vault chart deployment"
+  default     = "vault"
+}
