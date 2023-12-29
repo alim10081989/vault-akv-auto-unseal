@@ -34,8 +34,22 @@ module "vault_aks" {
   uami_kubelet_principal_id = module.vault_uami.uami_rt_principal_id
   uami_kubelet_id           = module.vault_uami.uami_rt_id
 
-  depends_on = [module.vault_uami]
+  depends_on = [
+    module.vault_uami
+  ]
 
+}
+
+resource "null_resource" "k8s_config" {
+  provisioner "local-exec" {
+    when    = create
+    command = <<EOL
+    kubectl get svc vault-ui -n vault --output jsonpath='{.status.loadBalancer.ingress[0].ip}' > ${path.cwd}/vault_ui
+    EOL
+    environment = {
+      KUBECONFIG = "${path.cwd}/kubeconfig"
+    }
+  }
 }
 
 module "vault_helm" {
@@ -43,7 +57,15 @@ module "vault_helm" {
 
   resource_group_name = module.vault_rg.rg_name
   k8s_cluster_name    = module.vault_aks.kubernetes_cluster_name
-  akv_name      	  = module.vault_akv.key_vault_name
+  akv_name            = module.vault_akv.key_vault_name
   vault_namespace     = var.helm_vault_ns
   akv_key_name        = module.vault_akv.vault_unseal_key_name
+}
+
+
+module "h_vault" {
+  source = "./modules/vault-ops"
+
+  resource_group_name = module.vault_rg.rg_name
+  k8s_cluster_name    = module.vault_aks.kubernetes_cluster_name
 }

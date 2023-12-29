@@ -17,3 +17,9 @@ output "kubernetes_cluster_name" {
   description = "Kubernetes Cluster Name"
   value       = module.vault_aks.kubernetes_cluster_name
 }
+
+output "k8s_kube_config" {
+  description = "Kubernetes Config"
+  value       = module.vault_aks.kube_config
+  sensitive   = true
+}

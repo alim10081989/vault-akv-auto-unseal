@@ -5,12 +5,19 @@ data "azurerm_kubernetes_cluster" "credentials" {
   resource_group_name = var.resource_group_name
 }
 
+resource "kubernetes_namespace" "vault" {
+  metadata {
+    name = var.vault_namespace
+  }
+
+}
+
 resource "helm_release" "vault" {
   name = "vault"
 
   repository = "https://helm.releases.hashicorp.com"
-  chart      = "hashicorp/vault"
-  namespace  = var.vault_namespace
+  chart      = "vault"
+  namespace  = kubernetes_namespace.vault.metadata[0].name
 
   values = [
     templatefile("${path.module}/templates/vault.yaml", {
@@ -19,5 +26,24 @@ resource "helm_release" "vault" {
       vault_unseal_key = var.akv_key_name
     })
   ]
-  depends_on = [ data.azurerm_kubernetes_cluster.credentials ] 
+  depends_on = [
+    data.azurerm_kubernetes_cluster.credentials,
+    kubernetes_namespace.vault
+  ]
+}
+
+resource "null_resource" "vault_init" {
+  provisioner "local-exec" {
+    when    = create
+    command = <<EOL
+    kubectl exec -it vault-0 -n vault -- vault operator init > ${path.cwd}/recovery_keys_token
+    grep -i root recovery_keys_token | awk '{print $NF}' > ${path.cwd}/root_token
+    EOL
+    environment = {
+      KUBECONFIG = "${path.cwd}/kubeconfig"
+    }
+  }
+  depends_on = [
+    kubernetes_namespace.vault
+  ]
 }

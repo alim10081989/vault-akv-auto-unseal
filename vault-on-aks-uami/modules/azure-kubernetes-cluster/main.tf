@@ -18,7 +18,7 @@ resource "azurerm_kubernetes_cluster" "k8s" {
 
   identity {
     type         = "UserAssigned"
-    identity_ids = [ var.uami_control_plane_id ]
+    identity_ids = [var.uami_control_plane_id]
   }
 
   kubelet_identity {
@@ -59,4 +59,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "usernodepool" {
   tags = {
     env = var.environment
   }
+}
+
+resource "local_file" "kubeconfig" {
+  depends_on = [azurerm_kubernetes_cluster.k8s]
+  filename   = "${path.cwd}/kubeconfig"
+  content    = azurerm_kubernetes_cluster.k8s.kube_config_raw
 }
