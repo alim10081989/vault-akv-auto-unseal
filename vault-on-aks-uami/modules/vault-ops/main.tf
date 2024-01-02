@@ -11,15 +11,15 @@ data "kubernetes_service" "vault_ui" {
 }
 
 data "local_file" "vault_srv" {
-  filename = "${path.cwd}/vault_ui"
+  filename = "${path.cwd}/files/vault_ui"
 }
 
 data "local_file" "root_token" {
-  filename = "${path.cwd}/vault_root_token"
+  filename = "${path.cwd}/files/vault_root_token"
 }
 
 data "local_file" "k8s_sa_token" {
-  filename = "${path.cwd}/k8s_service_account_token"
+  filename = "${path.cwd}/files/k8s_service_account_token"
 }
 
 resource "vault_mount" "kvv2" {
@@ -78,8 +78,8 @@ resource "null_resource" "k8s_manifest" {
   provisioner "local-exec" {
     when = create
     command = <<EOL
-    kubectl apply -f ${path.cwd}/files/internal-app.yaml
-    kubectl apply -f ${path.cwd}/files/devwebapp.yaml
+    kubectl apply -f ${path.cwd}/manifests/internal-app.yaml
+    kubectl apply -f ${path.cwd}/manifests/devwebapp.yaml
     EOL
   }
   depends_on = [ vault_kubernetes_auth_backend_role.k8s_role ]

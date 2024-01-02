@@ -37,13 +37,13 @@ resource "null_resource" "k8s_config" {
     when    = create
     command = <<EOL
     sleep 300
-    kubectl get svc vault-ui -n vault --output jsonpath='{.status.loadBalancer.ingress[0].ip}' > ${path.cwd}/vault_ui
-    kubectl exec vault-0 -n vault -- vault operator init > ${path.cwd}/vault_init_output
-    grep -i root vault_init_output | awk '{print $NF}' | tr -d "\n" > ${path.cwd}/vault_root_token
-    kubectl exec vault-0 -n vault -- cat /var/run/secrets/kubernetes.io/serviceaccount/token >  ${path.cwd}/k8s_service_account_token
+    kubectl get svc vault-ui -n vault --output jsonpath='{.status.loadBalancer.ingress[0].ip}' > ${path.cwd}/files/vault_ui
+    kubectl exec vault-0 -n vault -- vault operator init > ${path.cwd}/files/vault_init_output
+    grep -i root vault_init_output | awk '{print $NF}' | tr -d "\n" > ${path.cwd}/files/vault_root_token
+    kubectl exec vault-0 -n vault -- cat /var/run/secrets/kubernetes.io/serviceaccount/token >  ${path.cwd}/files/k8s_service_account_token
     EOL
     environment = {
-      KUBECONFIG = "${path.cwd}/kubeconfig"
+      KUBECONFIG = "${path.cwd}/files/kubeconfig"
     }
   }
 

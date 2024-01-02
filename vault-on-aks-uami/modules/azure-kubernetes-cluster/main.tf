@@ -65,6 +65,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "usernodepool" {
 
 resource "local_file" "kubeconfig" {
   depends_on = [azurerm_kubernetes_cluster.k8s]
-  filename   = "${path.cwd}/kubeconfig"
+  filename   = "${path.cwd}/files/kubeconfig"
   content    = azurerm_kubernetes_cluster.k8s.kube_config_raw
 }
