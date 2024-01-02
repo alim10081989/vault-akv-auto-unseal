@@ -32,18 +32,20 @@ resource "helm_release" "vault" {
   ]
 }
 
-resource "null_resource" "vault_init" {
+resource "null_resource" "k8s_config" {
   provisioner "local-exec" {
     when    = create
     command = <<EOL
-    kubectl exec -it vault-0 -n vault -- vault operator init > ${path.cwd}/recovery_keys_token
-    grep -i root recovery_keys_token | awk '{print $NF}' > ${path.cwd}/root_token
+    sleep 300
+    kubectl get svc vault-ui -n vault --output jsonpath='{.status.loadBalancer.ingress[0].ip}' > ${path.cwd}/vault_ui
+    kubectl exec vault-0 -n vault -- vault operator init > ${path.cwd}/vault_init_output
+    grep -i root vault_init_output | awk '{print $NF}' | tr -d "\n" > ${path.cwd}/vault_root_token
+    kubectl exec vault-0 -n vault -- cat /var/run/secrets/kubernetes.io/serviceaccount/token >  ${path.cwd}/k8s_service_account_token
     EOL
     environment = {
       KUBECONFIG = "${path.cwd}/kubeconfig"
     }
   }
-  depends_on = [
-    kubernetes_namespace.vault
-  ]
+
+  depends_on = [helm_release.vault]
 }

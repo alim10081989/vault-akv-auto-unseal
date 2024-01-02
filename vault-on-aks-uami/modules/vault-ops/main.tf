@@ -15,7 +15,11 @@ data "local_file" "vault_srv" {
 }
 
 data "local_file" "root_token" {
-  filename = "${path.cwd}/root_token"
+  filename = "${path.cwd}/vault_root_token"
+}
+
+data "local_file" "k8s_sa_token" {
+  filename = "${path.cwd}/k8s_service_account_token"
 }
 
 resource "vault_mount" "kvv2" {
@@ -26,15 +30,15 @@ resource "vault_mount" "kvv2" {
 }
 
 resource "vault_kv_secret_v2" "creds" {
-  mount                      = vault_mount.kvv2.path
-  name                       = "secret"
-  cas                        = 1
-  delete_all_versions        = true
-  data_json                  = jsonencode(
-  {
-    username       = "giraffe",
-    password       = "salsa"
-  }
+  mount               = vault_mount.kvv2.path
+  name                = "devwebapp/config"
+  cas                 = 1
+  delete_all_versions = true
+  data_json = jsonencode(
+    {
+      username = "giraffe",
+      password = "salsa"
+    }
   )
 }
 
@@ -43,10 +47,10 @@ resource "vault_auth_backend" "kubernetes" {
 }
 
 resource "vault_kubernetes_auth_backend_config" "k8s_config" {
-  backend                = vault_auth_backend.kubernetes.path
-  kubernetes_host        = data.azurerm_kubernetes_cluster.credentials.kube_config.0.host
-  kubernetes_ca_cert     = base64decode(data.azurerm_kubernetes_cluster.credentials.kube_config.0.cluster_ca_certificate)
-  token_reviewer_jwt     = base64decode(data.azurerm_kubernetes_cluster.credentials.kube_config.0.password)
+  backend            = vault_auth_backend.kubernetes.path
+  kubernetes_host    = data.azurerm_kubernetes_cluster.credentials.kube_config.0.host
+  kubernetes_ca_cert = base64decode(data.azurerm_kubernetes_cluster.credentials.kube_config.0.cluster_ca_certificate)
+  token_reviewer_jwt = data.local_file.k8s_sa_token.content
 }
 
 
@@ -56,7 +60,7 @@ resource "vault_kubernetes_auth_backend_role" "k8s_role" {
   bound_service_account_names      = ["internal-app"]
   bound_service_account_namespaces = ["default"]
   token_ttl                        = 3600
-  token_policies                   = ["devwebapp"]
+  token_policies                   = [vault_policy.k8s_policy.name]
 }
 
 resource "vault_policy" "k8s_policy" {
@@ -69,9 +73,14 @@ path "secret/data/devwebapp/config" {
 EOT
 }
 
-resource "kubectl_manifest" "my_service" {
-  for_each = toset(var.yamls)
-  yaml_body = file("${path.cwd}/files/${each.value}.yaml")
 
-  depends_on = [ vault_policy.k8s_policy ]
+resource "null_resource" "k8s_manifest" {
+  provisioner "local-exec" {
+    when = create
+    command = <<EOL
+    kubectl apply -f ${path.cwd}/files/internal-app.yaml
+    kubectl apply -f ${path.cwd}/files/devwebapp.yaml
+    EOL
+  }
+  depends_on = [ vault_kubernetes_auth_backend_role.k8s_role ]
 }

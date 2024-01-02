@@ -24,6 +24,22 @@ terraform {
       source  = "Azure/azapi"
       version = "~>1.5"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.12.1"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.24.0"
+    }
+    vault = {
+      source  = "hashicorp/vault"
+      version = "~> 3.23.0"
+    }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.14.0"
+    }
   }
 }
 

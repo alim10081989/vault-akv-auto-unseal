@@ -59,6 +59,8 @@ resource "azurerm_kubernetes_cluster_node_pool" "usernodepool" {
   tags = {
     env = var.environment
   }
+
+  depends_on = [ azurerm_kubernetes_cluster.k8s ]
 }
 
 resource "local_file" "kubeconfig" {

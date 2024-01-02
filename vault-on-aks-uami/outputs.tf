@@ -23,3 +23,13 @@ output "k8s_kube_config" {
   value       = module.vault_aks.kube_config
   sensitive   = true
 }
+
+output "vault_srv" {
+  description = "Vault UI IP"
+  value = module.h_vault.vault_ui
+}
+
+output "vault_token" {
+  description = "Vault Root Token"
+  value = module.h_vault.vault_root_token
+}

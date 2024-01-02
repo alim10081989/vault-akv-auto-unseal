@@ -9,6 +9,6 @@ variable "k8s_cluster_name" {
 }
 
 variable "yamls" {
-  type = list(string)
-  default = [ "internal-app", "devwebapp" ]
+  type    = list(string)
+  default = ["internal-app", "devwebapp"]
 }
