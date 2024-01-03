@@ -24,12 +24,15 @@ output "k8s_kube_config" {
   sensitive   = true
 }
 
-output "vault_srv" {
-  description = "Vault UI IP"
-  value = module.h_vault.vault_ui
-}
+output "vault_login_cmd" {
+  description = "Vault Login Guide"
+  value       = <<EOF
 
-output "vault_token" {
-  description = "Vault Root Token"
-  value = module.h_vault.vault_root_token
+  Steps:
+
+    1. export VAULT_ADDR="http://${module.h_vault.vault_ui}:8200"
+    2. vault login "${base64decode(module.h_vault.vault_root_token)}"
+
+  EOF
+  sensitive   = true
 }

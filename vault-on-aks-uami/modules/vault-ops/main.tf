@@ -42,6 +42,11 @@ resource "vault_kv_secret_v2" "creds" {
   )
 }
 
+data "vault_kv_secret_v2" "creds_example" {
+  mount = vault_mount.kvv2.path
+  name  = vault_kv_secret_v2.creds.name
+}
+
 resource "vault_auth_backend" "kubernetes" {
   type = "kubernetes"
 }
@@ -76,11 +81,14 @@ EOT
 
 resource "null_resource" "k8s_manifest" {
   provisioner "local-exec" {
-    when = create
+    when    = create
     command = <<EOL
     kubectl apply -f ${path.cwd}/manifests/internal-app.yaml
     kubectl apply -f ${path.cwd}/manifests/devwebapp.yaml
     EOL
+    environment = {
+      KUBECONFIG = "${path.cwd}/files/kubeconfig"
+    }
   }
-  depends_on = [ vault_kubernetes_auth_backend_role.k8s_role ]
+  depends_on = [vault_kubernetes_auth_backend_role.k8s_role]
 }

@@ -5,5 +5,6 @@ output "vault_ui" {
 
 output "vault_root_token" {
   description = "vault root token"
-  value       = data.local_file.root_token.content
+  value       = data.local_file.root_token.content_base64
+  sensitive   = true
 }

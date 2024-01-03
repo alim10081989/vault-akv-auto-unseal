@@ -17,7 +17,7 @@ terraform {
 
 provider "vault" {
   address = "http://${data.local_file.vault_srv.content}:8200"
-  token   = "${data.local_file.root_token.content}"
+  token   = base64decode(data.local_file.root_token.content_base64)
 }
 
 # provider "kubernetes" {
