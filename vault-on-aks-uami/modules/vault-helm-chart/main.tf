@@ -55,7 +55,7 @@ resource "null_resource" "k8s_config" {
     > ${path.cwd}/files/vault_root_token
     > ${path.cwd}/files/k8s_service_account_token
     EOL
- }
+  }
 
   depends_on = [
     kubernetes_namespace.vault,
